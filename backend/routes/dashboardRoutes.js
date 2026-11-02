@@ -17,7 +17,8 @@ router.get("/", protect, authorize("admin"), async (req, res) => {
       pendingRequests,
       resolvedRequests,
       totalVolunteers,
-      activeAlerts
+      activeAlerts,
+      activeSosCount
     ] = await Promise.all([
       AssistanceRequest.countDocuments(),
 
@@ -35,6 +36,11 @@ router.get("/", protect, authorize("admin"), async (req, res) => {
 
       DisasterAlert.countDocuments({
         isActive: true
+      }),
+
+      AssistanceRequest.countDocuments({
+        isSos: true,
+        status: { $in: ["Submitted", "Under Review", "Assigned", "In Progress"] }
       })
     ]);
 
@@ -70,6 +76,7 @@ res.status(200).json({
       resolvedRequests,
       totalVolunteers,
       activeAlerts,
+      activeSosCount,
       requestsByType,
       requestsByStatus
     }

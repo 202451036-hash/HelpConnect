@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { loginLimiter } = require("../middleware/rateLimiter");
+const { protect } = require("../middleware/auth");
+const authorize = require("../middleware/authorize");
 
 const router = express.Router();
 
@@ -127,6 +129,40 @@ router.post("/login",loginLimiter, async (req, res) => {
     console.error(error);
     return res.status(500).json({
       message: "Server error during login",
+    });
+  }
+});
+
+// GET CURRENT USER PROFILE
+router.get("/me", protect, async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+    },
+  });
+});
+
+// GET ALL VOLUNTEERS (Admin only - for dispatching / assigning requests)
+router.get("/volunteers", protect, authorize("admin"), async (req, res) => {
+  try {
+    const volunteers = await User.find({ role: "volunteer" })
+      .select("_id name email createdAt")
+      .sort({ name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      count: volunteers.length,
+      volunteers,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch volunteers",
+      error: error.message,
     });
   }
 });

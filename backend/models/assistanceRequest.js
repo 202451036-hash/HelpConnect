@@ -18,7 +18,30 @@ const assistanceRequestSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: false,
+      default: null
+    },
+
+    isSos: {
+      type: Boolean,
+      default: false
+    },
+
+    sosType: {
+      type: String,
+      enum: ["water", "earth", "fire", null],
+      default: null
+    },
+
+    sosSymbol: {
+      type: String,
+      default: null
+    },
+
+    source: {
+      type: String,
+      enum: ["Web", "SOS_Button", "SMS_Beacon"],
+      default: "Web"
     },
 
     assignedTo: {
@@ -106,7 +129,8 @@ const assistanceRequestSchema = new mongoose.Schema(
         changedBy: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
-          required: true
+          required: false,
+          default: null
         },
 
         changedAt: {
